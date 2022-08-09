@@ -40,7 +40,7 @@ on:
         required: true
 jobs:
   plan:
-    name: plan terraform
+    name: plan ${{ inputs.ENVIRONMENT }} terraform
     environment: ${{ inputs.ENVIRONMENT }}
     runs-on: ubuntu-latest
     defaults:

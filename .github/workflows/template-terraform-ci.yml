@@ -35,6 +35,7 @@ on:
         required: true
 jobs:
   terraform-build-and-test:
+    name: Continuous Integration
     runs-on: ubuntu-latest
     defaults:
       run:

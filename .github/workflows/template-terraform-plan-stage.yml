@@ -36,7 +36,7 @@ on:
         required: true
 jobs:
   plan:
-    name: plan terraform
+    name: plan ${{ inputs.ENVIRONMENT }} terraform
     environment: ${{ inputs.ENVIRONMENT }}
     runs-on: ubuntu-latest
     defaults:
@@ -123,5 +123,4 @@ jobs:
         with:
          name: terraform_plan_${{ inputs.ENVIRONMENT }}
          path: ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/terraform.7z
-      # create hiera variables.yaml from environment variables - NEEDS REVIEWING
 
