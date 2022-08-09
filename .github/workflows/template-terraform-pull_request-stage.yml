@@ -117,14 +117,14 @@ jobs:
           $hiera_tfvars_json = (ConvertTo-Json $tf_vars -Depth 99)
           Set-Content -Path ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/hiera.auto.tfvars.json -Value $hiera_tfvars_json
       - name: Terraform Plan
-        id: plan
+        id: tf_plan
         run: |
           terraform plan -no-color
       - name: Update Pull Request
         uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
         env:
-          PLAN: "${{ inputs.ENVIRONMENT }} Terraform \n${{ steps.plan.outputs.stdout }}"
+          PLAN: "${{ inputs.ENVIRONMENT }} Terraform \n${{ steps.tf_plan.outputs.stdout }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
