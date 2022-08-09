@@ -120,7 +120,7 @@ jobs:
         id: plan
         run: |
           terraform plan
-      - name: Output lan
+      - name: Output Plan
         run: |
           ${{ steps.plan.outputs.stdout }} >> $GITHUB_STEP_SUMMARY
 
