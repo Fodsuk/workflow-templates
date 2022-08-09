@@ -122,5 +122,5 @@ jobs:
           terraform plan
       - name: Output Plan
         run: |
-          echo '${{ steps.plan.outputs.stdout }}' >> GITHUB_STEP_SUMMARY
+          echo '${{ steps.plan.outputs.stdout }}' >> $GITHUB_STEP_SUMMARY
 
