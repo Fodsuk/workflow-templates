@@ -118,15 +118,5 @@ jobs:
           Set-Content -Path ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/hiera.auto.tfvars.json -Value $hiera_tfvars_json
       - name: Terraform Plan
         run: |
-          terraform plan -out="terraform.plan"
-      - name: Terraform Archive Plan
-        if: ${{ inputs.CREATE_ARTIFACT }}
-        run: |
-          7z a -t7z ./terraform.7z ./terraform.plan -p"{{ $secrets.TFSTATE_STORAGE_ACCOUNT_ACCESS_KEY }}"
-      - name: Upload Terraform Artifact
-        if: ${{ inputs.CREATE_ARTIFACT }}
-        uses: actions/upload-artifact@v3
-        with:
-         name: terraform_plan_${{ inputs.ENVIRONMENT }}
-         path: ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/terraform.7z
+          terraform plan
 
