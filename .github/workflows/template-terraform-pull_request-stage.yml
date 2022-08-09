@@ -129,5 +129,4 @@ jobs:
         with:
          name: terraform_plan_${{ inputs.ENVIRONMENT }}
          path: ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/terraform.7z
-      # create hiera variables.yaml from environment variables - NEEDS REVIEWING
 
