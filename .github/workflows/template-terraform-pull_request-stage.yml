@@ -117,6 +117,10 @@ jobs:
           $hiera_tfvars_json = (ConvertTo-Json $tf_vars -Depth 99)
           Set-Content -Path ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/hiera.auto.tfvars.json -Value $hiera_tfvars_json
       - name: Terraform Plan
+        id: plan
         run: |
           terraform plan
+      - name: Output lan
+        run: |
+          ${{ steps.plan.outputs.stdout }} >> $GITHUB_STEP_SUMMARY
 
