@@ -87,11 +87,11 @@ jobs:
           Write-Host "Create fixture.auto.tfvars, terraform can use the output as inputs"
           terraform output > ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/fixture.auto.tfvars
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
-      - name: Create fixture_hiera.json
+      - name: Create fixture_outputs.json
         if: ${{ inputs.HAS_FIXTURES }} && ${{ inputs.HAS_HIERA }}
         run: |
-          Write-Host "Create fixture_hiera.json, hiera can use the output as inputs"
-          terraform output -json | jq 'with_entries(.value |= .value)' > ${{github.workspace}}/${{ inputs.HIERA_DIRECTORY }}/fixture_hiera.json
+          Write-Host "Create fixture_outputs.json, hiera can use the output as inputs"
+          terraform output -json | jq 'with_entries(.value |= .value)' > ${{github.workspace}}/${{ inputs.HIERA_DIRECTORY }}/fixture_outputs.json
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: Download & Build Hiera
         if: ${{ inputs.HAS_HIERA }}
