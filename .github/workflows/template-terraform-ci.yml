@@ -88,18 +88,21 @@ jobs:
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: Create fixture.auto.tfvars
         if: ${{ inputs.HAS_FIXTURES }}
+        continue-on-error: true
         run: |
           Write-Host "Create fixture.auto.tfvars, terraform can use the output as inputs"
           terraform output > ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/fixture.auto.tfvars
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: Create fixture_outputs.json for hiera
         if: ${{ inputs.HAS_FIXTURES }} && ${{ inputs.HAS_HIERA }}
+        continue-on-error: true
         run: |
           Write-Host "Create fixture_outputs.json, hiera can use the output as inputs"
           terraform output -json | jq 'with_entries(.value |= .value)' > ${{github.workspace}}/${{ inputs.HIERA_DIRECTORY }}/data/fixture_outputs.json
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: Download & Build Hiera
         if: ${{ inputs.HAS_HIERA }}
+        continue-on-error: true
         run: |
           git clone https://github.com/lyraproj/hiera hiera_code
           Push-Location hiera_code/lookup
@@ -109,6 +112,7 @@ jobs:
         working-directory: ${{ inputs.HIERA_DIRECTORY }}
       - name: Generate hiera.auto.tfvars.json from Hiera
         if: ${{ inputs.HAS_HIERA }}
+        continue-on-error: true
         run: |
           Push-Location ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}
           $terraform_variables = Select-String -Pattern "variable \""(?'variable_name'[a-zA-Z_]+)\"" {" -Path *.tf
@@ -136,10 +140,10 @@ jobs:
           Set-Content -Path ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/hiera.auto.tfvars.json -Value $hiera_tfvars_json
         working-directory: ${{ inputs.HIERA_DIRECTORY }}
       - name: Terraform Plan
-        id: plan
+        continue-on-error: true
         run: terraform plan
       - name: Terraform Apply
-        id: apply
+        continue-on-error: true
         run: |
           terraform apply --auto-approve
 
@@ -148,7 +152,8 @@ jobs:
           terraform show -json plan.raw > variables_and_outputs.json
         # run tests
       - name: Run Tests
-        if: ${{ inputs.HAS_TESTS }} && always()
+        if: ${{ inputs.HAS_TESTS }}
+        continue-on-error: true
         run: |
           Import-Module Pester -RequiredVersion ${{ inputs.PESTER_VERSION }}
           $pester_config = [PesterConfiguration]::Default
@@ -159,6 +164,7 @@ jobs:
         working-directory: ${{ inputs.TEST_DIRECTORY }}
         # destroy all resources
       - name: Destroy Terraform
+        continue-on-error: true
         run: terraform apply -destroy --auto-approve
       - name: Destroy Fixtures
         if: ${{ inputs.HAS_FIXTURES }}
