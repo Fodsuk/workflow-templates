@@ -106,11 +106,11 @@ jobs:
           foreach ($terraform_variable_found in $terraform_variables) {
             $terraform_variable_name =  ($terraform_variable_found.Matches.Groups | Where-Object { $_.Name -eq "variable_name" }).Value
             Write-Host "Variable found in terraform $terraform_variable_name"
-            $variable_value_json = ./lookup $tf_variable.Key --render-as json --facts ./facts.yaml
+            $variable_value_json = ./lookup $terraform_variable_name --render-as json --facts ./facts.yaml
 
             if ($null -ne $variable_value_json) {
                   Write-Host "Found a value for variable ($terraform_variable_name) in hiera"
-                  $tf_vars[$tf_variable.Key] = ConvertFrom-Json $variable_value_json -Depth 99
+                  $tf_vars[$terraform_variable_name] = ConvertFrom-Json $variable_value_json -Depth 99
             }
           }
 
