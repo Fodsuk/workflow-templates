@@ -92,13 +92,6 @@ jobs:
       - name: Generate hiera.auto.tfvars.json from Hiera
         if: ${{ inputs.HAS_HIERA }}
         run: |
-          terraform plan -json -out="plan.raw"
-          terraform show -json plan.raw > ${{github.workspace}}/${{ inputs.HIERA_DIRECTORY }}/variables.json
-
-          Push-Location ${{github.workspace}}/${{ inputs.HIERA_DIRECTORY }}
-
-          $terraform_data = Get-Content variables.json | Out-String | ConvertFrom-Json -Depth 99 -AsHashtable
-
           if ("${{ secrets.HIERA_FACTS }}" -ne "") {
             Set-Content -Path ./facts.yaml -Value "${{ secrets.HIERA_FACTS }}"
           } else {
@@ -107,15 +100,21 @@ jobs:
 
           $tf_vars = @{}
 
-          foreach ($tf_variable in $terraform_data.variables.GetEnumerator()) {
-              $variable_value_json = ./lookup $tf_variable.Key --render-as json --facts ./facts.yaml
+          $terraform_variables = Select-String -Pattern "variable \""(?'variable_name'[a-zA-Z_]+)\"" {" -Path *.tf
+          foreach ($terraform_variable_found in $terraform_variables) {
+            $terraform_variable_name =  ($terraform_variable_found.Matches.Groups | Where-Object { $_.Name -eq "variable_name" }).Value
+            Write-Host "Variable found in terraform $terraform_variable_name"
+            $variable_value_json = ./lookup $tf_variable.Key --render-as json --facts ./facts.yaml
 
-              if ($null -ne $variable_value_json) {
+            if ($null -ne $variable_value_json) {
+                  Write-Host "Found a value for variable ($terraform_variable_name) in hiera"
                   $tf_vars[$tf_variable.Key] = ConvertFrom-Json $variable_value_json -Depth 99
-              }
+            }
           }
+
           $hiera_tfvars_json = (ConvertTo-Json $tf_vars -Depth 99)
           Set-Content -Path ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/hiera.auto.tfvars.json -Value $hiera_tfvars_json
+        working-directory: ${{ inputs.HIERA_DIRECTORY }}
       - name: Terraform Plan
         id: tf_plan
         run: |
