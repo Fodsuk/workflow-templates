@@ -84,6 +84,8 @@ jobs:
           terraform init
           terraform apply --auto-approve
           terraform output > ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/fixture.auto.tfvars
+
+          Write-Host (Get-Content '${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/fixture.auto.tfvars')
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: Download & Build Hiera
         if: ${{ inputs.HAS_HIERA }}
