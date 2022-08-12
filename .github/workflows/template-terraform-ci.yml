@@ -77,15 +77,21 @@ jobs:
         id: validate
         run: terraform validate
       - name: Create Fixtures
-        id: apply_fixtures
-        continue-on-error: true
         if: ${{ inputs.HAS_FIXTURES }}
         run: |
           terraform init
           terraform apply --auto-approve
+      - name: Create fixture.auto.tfvars
+        if: ${{ inputs.HAS_FIXTURES }}
+        run: |
+          Write-Host "Create fixture.auto.tfvars, terraform can use the output as inputs"
           terraform output > ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/fixture.auto.tfvars
-
-          Write-Host (Get-Content '${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/fixture.auto.tfvars')
+        working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
+      - name: Create fixture_hiera.json
+        if: ${{ inputs.HAS_FIXTURES }} && ${{ inputs.HAS_HIERA }}
+        run: |
+          Write-Host "Create fixture_hiera.json, hiera can use the output as inputs"
+          terraform output -json | jq 'with_entries(.value |= .value)' > ${{github.workspace}}/${{ inputs.HIERA_DIRECTORY }}/fixture_hiera.json
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: Download & Build Hiera
         if: ${{ inputs.HAS_HIERA }}
@@ -111,7 +117,7 @@ jobs:
 
           $tf_vars = @{}
           foreach ($terraform_variable_found in $terraform_variables) {
-            $terraform_variable_name =  ($terraform_variable_found.Matches.Groups | Where-Object { $_.Name -eq "variable_name" }).Value
+            $terraform_variable_name = ($terraform_variable_found.Matches.Groups | Where-Object { $_.Name -eq "variable_name" }).Value
             Write-Host "Looking up terraform variable $terraform_variable_name in hiera..."
             $variable_value_json = ./lookup $terraform_variable_name --render-as json --facts ./facts.yaml
 
