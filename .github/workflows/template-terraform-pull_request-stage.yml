@@ -92,6 +92,10 @@ jobs:
       - name: Generate hiera.auto.tfvars.json from Hiera
         if: ${{ inputs.HAS_HIERA }}
         run: |
+          Push-Location ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}
+          $terraform_variables = Select-String -Pattern "variable \""(?'variable_name'[a-zA-Z_]+)\"" {" -Path *.tf
+          Pop-Location
+
           if ("${{ secrets.HIERA_FACTS }}" -ne "") {
             Set-Content -Path ./facts.yaml -Value "${{ secrets.HIERA_FACTS }}"
           } else {
@@ -99,8 +103,6 @@ jobs:
           }
 
           $tf_vars = @{}
-
-          $terraform_variables = Select-String -Pattern "variable \""(?'variable_name'[a-zA-Z_]+)\"" {" -Path *.tf
           foreach ($terraform_variable_found in $terraform_variables) {
             $terraform_variable_name =  ($terraform_variable_found.Matches.Groups | Where-Object { $_.Name -eq "variable_name" }).Value
             Write-Host "Variable found in terraform $terraform_variable_name"
