@@ -7,6 +7,9 @@ on:
       TERRAFORM_DIRECTORY:
         type: string
         default: src
+       # environment
+      ENVIRONMENT:
+        type: string
       # fixtures
       HAS_FIXTURES:
         type: boolean
@@ -45,6 +48,7 @@ on:
 jobs:
   terraform-build-and-test:
     name: Continuous Integration
+    environment: ${{ inputs.ENVIRONMENT }}
     runs-on: ubuntu-latest
     defaults:
       run:
