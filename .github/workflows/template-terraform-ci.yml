@@ -85,13 +85,14 @@ jobs:
         run: |
           terraform init
           terraform apply --auto-approve
+        working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: Create fixture.auto.tfvars
         if: ${{ inputs.HAS_FIXTURES }}
         run: |
           Write-Host "Create fixture.auto.tfvars, terraform can use the output as inputs"
           terraform output > ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/fixture.auto.tfvars
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
-      - name: Create fixture_outputs.json
+      - name: Create fixture_outputs.json for hiera
         if: ${{ inputs.HAS_FIXTURES }} && ${{ inputs.HAS_HIERA }}
         run: |
           Write-Host "Create fixture_outputs.json, hiera can use the output as inputs"
