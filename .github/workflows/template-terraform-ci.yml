@@ -136,10 +136,10 @@ jobs:
           Set-Content -Path ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/hiera.auto.tfvars.json -Value $hiera_tfvars_json
         working-directory: ${{ inputs.HIERA_DIRECTORY }}
       - name: Terraform Plan
-        run: terraform plan -detailed-exitcode
+        run: terraform plan
       - name: Terraform Apply
         run: |
-          terraform apply --auto-approve -detailed-exitcode
+          terraform apply --auto-approve
 
           # generate variables_and_outputs.json (can be used by pester tests)
           terraform plan -json -out="plan.raw"
