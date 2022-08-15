@@ -86,7 +86,7 @@ jobs:
           terraform init
           terraform apply --auto-approve
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
-      - name: Create fixture.auto.tfvars
+      - name: Create fixture.auto.tfvars for terraform
         if: ${{ inputs.HAS_FIXTURES }}
         run: |
           Write-Host "Create fixture.auto.tfvars, terraform can use the output as inputs"
