@@ -156,9 +156,7 @@ jobs:
         continue-on-error: true
         run: |
           terraform plan -out theplan -detailed-exitcode
-          $TERRAFORM_OUTCOME = $LASTEXITCODE
-          Write-Host $TERRAFORM_OUTCOME
-          if ($TERRAFORM_OUTCOME -eq 1) { exit 12; }
+          if ($LASTEXITCODE -eq 1) { exit 55; } else { Write-Host "all good!" }
       - name: Terraform Apply
         id: apply_terraform
         continue-on-error: true
