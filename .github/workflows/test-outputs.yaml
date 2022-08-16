@@ -7,6 +7,8 @@ jobs:
       run:
         shell: pwsh
     steps:
+      - name: checkout
+        uses: actions/checkout@v3
       - name: create fixtures
         id: create_fixtures
         run: |
@@ -15,6 +17,7 @@ jobs:
         id: create_terraform
         run: |
           echo '::set-output name=succeeded::false'
+          Get-ChildItem -Recurse
       - name: run tests
         id: run_tests
         if: ${{ steps.create_fixtures.outputs.succeeded == 'true' }}
