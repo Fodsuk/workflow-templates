@@ -19,7 +19,6 @@ jobs:
         continue-on-error: true
         run: |
           Write-Host "Creating Terraform"
-          throw "BANG"
       - name: run tests
         id: run_pester_tests
         if: ${{ steps.create_terraform.outcome == 'success' && steps.create_fixtures.outcome == 'success' }}
@@ -40,13 +39,15 @@ jobs:
         continue-on-error: true
         run: |
           Write-Host "Destroying Fixtures"
-          throw "BANG"
       - name: validation
         run : |
 
           if ($${{ contains(steps.*.outcome, 'failure') }}) {
             Write-Host "Something went bang"
+          } else {
+            Write-Host "All succeeded"
           }
+          
 
           if ($${{ steps.create_terraform.outcome == 'success' && steps.create_fixtures.outcome == 'success' }}) {
             Write-Host "Creating the resources succeeded"
@@ -55,3 +56,4 @@ jobs:
           if ($${{ steps.destroy_terraform.outcome == 'success' && steps.destroy_fixtures.outcome == 'success' }}) {
             Write-Host "Destroying the resources succeeded"
           }
+ 
