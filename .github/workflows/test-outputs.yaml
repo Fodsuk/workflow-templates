@@ -41,19 +41,7 @@ jobs:
           Write-Host "Destroying Fixtures"
       - name: validation
         run : |
-
           if ($${{ contains(steps.*.outcome, 'failure') }}) {
-            Write-Host "Something went bang"
-          } else {
-            Write-Host "All succeeded"
-          }
-          
-
-          if ($${{ steps.create_terraform.outcome == 'success' && steps.create_fixtures.outcome == 'success' }}) {
-            Write-Host "Creating the resources succeeded"
-          }
-
-          if ($${{ steps.destroy_terraform.outcome == 'success' && steps.destroy_fixtures.outcome == 'success' }}) {
-            Write-Host "Destroying the resources succeeded"
+            throw "Something went bang"
           }
  
