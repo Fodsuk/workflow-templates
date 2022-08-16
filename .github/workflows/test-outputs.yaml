@@ -52,7 +52,7 @@ jobs:
           echo '|  action   |   outcome  |' >> $ENV:GITHUB_STEP_SUMMARY
           echo '|-----------|------------|' >> $ENV:GITHUB_STEP_SUMMARY
 
-          foreach($e in $steps.GetEnumerator() "failure" }) {
+          foreach($e in $steps.GetEnumerator()) {
              $action_name = $e.Key
              $action_outcome = $e.Value.outcome #failure success
              echo "|$action_name|$action_outcome|" >> $ENV:GITHUB_STEP_SUMMARY
