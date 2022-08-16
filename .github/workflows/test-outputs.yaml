@@ -19,6 +19,7 @@ jobs:
         continue-on-error: true
         run: |
           Write-Host "Creating Terraform"
+          throw "failed to create terraform"
       - name: run tests
         id: run_pester_tests
         if: ${{ steps.create_terraform.outcome == 'success' && steps.create_fixtures.outcome == 'success' }}
