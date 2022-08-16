@@ -25,3 +25,9 @@ jobs:
         if: ${{ steps.create_terraform.outputs.succeeded == 'true' }}
         run : |
           Write-Host "${{ steps.create_terraform.outputs.succeeded }}"
+      - name: run tests 3
+        id: run_tests3
+        if: ${{ steps.create_terraform.outputs.succeeded == 'true' }} && ${{ steps.create_fixtures.outputs.succeeded == 'true' }}
+        run : |
+          Write-Host "${{ steps.create_fixtures.outputs.succeeded }}"
+          Write-Host "${{ steps.create_terraform.outputs.succeeded }}"
