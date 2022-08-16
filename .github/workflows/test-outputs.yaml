@@ -44,8 +44,7 @@ jobs:
           if ($${{ contains(steps.*.outcome, 'failure') }}) {
             echo "::error title=failure::a step failed"
 
-            $steps_json = @"
-            ${{ toJSON(steps) }}
+            $steps_json = @"${{ toJSON(steps) }}
             "@
 
             Write-Host $steps_json
