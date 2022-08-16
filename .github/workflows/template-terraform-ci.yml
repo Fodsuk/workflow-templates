@@ -67,6 +67,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
       - name: Install Terraform ${{ inputs.TERRAFORM_VERSION }}
+        id: install_terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ inputs.TERRAFORM_VERSION }}
@@ -82,24 +83,33 @@ jobs:
         run: terraform validate
       - name: Create Fixtures
         if: ${{ inputs.HAS_FIXTURES }}
+        id: create_fixtures
+        continue-on-error: true
         run: |
           terraform init
-          terraform apply --auto-approve
+          terraform apply --auto-approve -detailed-exitcode
+          if ($LASTEXITCODE -eq 1) { exit 1; }
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: Create fixture.auto.tfvars for terraform
         if: ${{ inputs.HAS_FIXTURES }}
+        id: create_fixture_tfvars
+        continue-on-error: true
         run: |
           Write-Host "Create fixture.auto.tfvars, terraform can use the output as inputs"
           terraform output > ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/fixture.auto.tfvars
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: Create fixture_outputs.json for hiera
         if: ${{ inputs.HAS_FIXTURES }} && ${{ inputs.HAS_HIERA }}
+        id: create_fixture_json_for_hiera
+        continue-on-error: true
         run: |
           Write-Host "Create fixture_outputs.json, hiera can use the output as inputs"
           terraform output -json | jq 'with_entries(.value |= .value)' > ${{github.workspace}}/${{ inputs.HIERA_DIRECTORY }}/data/fixture_outputs.json
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: Download & Build Hiera
         if: ${{ inputs.HAS_HIERA }}
+        id: download_and_build_hiera
+        continue-on-error: true
         run: |
           git clone https://github.com/lyraproj/hiera hiera_code
           Push-Location hiera_code/lookup
@@ -109,6 +119,8 @@ jobs:
         working-directory: ${{ inputs.HIERA_DIRECTORY }}
       - name: Generate hiera.auto.tfvars.json from Hiera
         if: ${{ inputs.HAS_HIERA }}
+        id: generate_tfvar_from_hiera
+        continue-on-error: true
         run: |
           Push-Location ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}
           $terraform_variables = Select-String -Pattern "variable \""(?'variable_name'[a-zA-Z_]+)\"" {" -Path *.tf
@@ -141,10 +153,17 @@ jobs:
           Set-Content -Path ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/hiera.auto.tfvars.json -Value $hiera_tfvars_json
         working-directory: ${{ inputs.HIERA_DIRECTORY }}
       - name: Terraform Plan
-        run: terraform plan
-      - name: Terraform Apply
+        id: plan_terraform
+        continue-on-error: true
         run: |
-          terraform apply --auto-approve
+          terraform plan -detailed-exitcode
+          if ($LASTEXITCODE -eq 1) { exit 1; }
+      - name: Terraform Apply
+        id: apply_terraform
+        continue-on-error: true
+        run: |
+          terraform apply --auto-approve -detailed-exitcode
+          if ($LASTEXITCODE -eq 1) { exit 1; }
 
           # generate variables_and_outputs.json (can be used by pester tests)
           terraform plan -json -out="plan.raw"
@@ -152,19 +171,49 @@ jobs:
         # run tests
       - name: Run Tests
         if: ${{ inputs.HAS_TESTS }}
+        id: run_tests
+        continue-on-error: true
         run: |
           Import-Module Pester -RequiredVersion ${{ inputs.PESTER_VERSION }}
           $pester_config = [PesterConfiguration]::Default
           $pester_config.Output.Verbosity = "Detailed"
           $pester_config.Filter.Tag = "ci"
+          $pester_config.Run.Exit = $true
 
           Invoke-Pester -Configuration $pester_config
         working-directory: ${{ inputs.TEST_DIRECTORY }}
         # destroy all resources
       - name: Destroy Terraform
-        run: terraform apply -destroy --auto-approve
+        id: destroy_terraform
+        continue-on-error: true
+        run: |
+          terraform apply -destroy --auto-approve -detailed-exitcode
+          if ($LASTEXITCODE -eq 1) { exit 1; }
       - name: Destroy Fixtures
         if: ${{ inputs.HAS_FIXTURES }}
-        run: terraform apply -destroy --auto-approve
+        id: destroy_fixtures
+        continue-on-error: true
+        run: |
+          terraform apply -destroy --auto-approve -detailed-exitcode
+          if ($LASTEXITCODE -eq 1) { exit 1; }
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
+      - name: validation
+        if: always()
+        run: |
+          if ($${{ contains(steps.*.outcome, 'failure') }}) {
+
+          $steps_json = 
+          @"
+            ${{ toJSON(steps) }}
+          "@
+
+          $steps = ConvertFrom-Json $steps_json -depth 10 -AsHashtable
+
+          foreach($e in $steps.GetEnumerator() | Where-Object { $_.Value.outcome -eq "failure" }) {
+             echo "::error title=step $($e.Key) failed::please review"
+          }
+
+          throw;
+
+          }
 
