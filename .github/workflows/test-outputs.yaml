@@ -17,22 +17,25 @@ jobs:
         id: create_terraform
         run: |
           echo '::set-output name=succeeded::false'
-          Import-Module Pester
-          Get-ChildItem -Recurse
-          ./.github/workflows/powershell.ps1
       - name: run tests
         id: run_tests
         if: ${{ steps.create_fixtures.outputs.succeeded == 'true' }}
-        run : |
+        run: |
           Write-Host "${{ steps.create_fixtures.outputs.succeeded }}"
       - name: run tests 2
         id: run_tests2
         if: ${{ steps.create_terraform.outputs.succeeded == 'true' }}
-        run : |
+        run: |
           Write-Host "${{ steps.create_terraform.outputs.succeeded }}"
       - name: run tests 3
         id: run_tests3
         if: ${{ steps.create_terraform.outputs.succeeded == 'true' && steps.create_fixtures.outputs.succeeded == 'true' }}
-        run : |
+        run: |
           Write-Host "${{ steps.create_fixtures.outputs.succeeded }}"
           Write-Host "${{ steps.create_terraform.outputs.succeeded }}"
+      - name: run tests
+        id: run_pester_tests
+        run: |
+          Import-Module Pester
+          ./powershell.ps1
+        workingDirectory: ${{github.workspace}}/.github/workflows

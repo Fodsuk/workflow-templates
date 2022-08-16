@@ -1,1 +1,3 @@
-Write-Host "hello"
+Write-Host "hello from pester"
+
+Invoke-Pester
