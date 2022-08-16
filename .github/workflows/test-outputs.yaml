@@ -17,11 +17,11 @@ jobs:
           echo '::set-output name=succeeded::false'
       - name: run tests
         id: run_tests
-        if: steps.create_fixtures.outputs.succeeded
+        if: ${{ steps.create_fixtures.outputs.succeeded == true }}
         run : |
           Write-Host "${{ steps.create_fixtures.outputs.succeeded }}"
       - name: run tests 2
         id: run_tests2
-        if: false
+        if: ${{ steps.create_terraform.outputs.succeeded == true }}
         run : |
           Write-Host "${{ steps.create_terraform.outputs.succeeded }}"
