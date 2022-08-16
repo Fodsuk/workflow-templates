@@ -40,21 +40,20 @@ jobs:
         run: |
           Write-Host "Destroying Fixtures"
       - name: validation
-        run : |
+        run: |
           if ($${{ contains(steps.*.outcome, 'failure') }}) {
 
-            $steps_json = 
-            @"
+          $steps_json = 
+          @"
             ${{ toJSON(steps) }}
-            "@
+          "@
 
-            $steps = ConvertFrom-Json $steps_json -depth 10 -AsHashtable
- 
-            foreach($e in $steps.GetEnumerator() | Where-Object { $_.Value.outcome -eq "failure" }) {
-              echo "::error title=step $($e.Key)::failed"
-            }
+          $steps = ConvertFrom-Json $steps_json -depth 10 -AsHashtable
 
-            throw;
+          foreach($e in $steps.GetEnumerator() | Where-Object { $_.Value.outcome -eq "failure" }) {
+             echo "::error title=step $($e.Key)::failed"
+          }
+
+          throw;
 
           }
- 
