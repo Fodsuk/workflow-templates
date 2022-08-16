@@ -87,8 +87,7 @@ jobs:
         continue-on-error: true
         run: |
           terraform init
-          terraform apply --auto-approve -detailed-exitcode
-          if ($LASTEXITCODE -eq 1) { exit 1; }
+          terraform apply --auto-approve
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: Create fixture.auto.tfvars for terraform
         if: ${{ inputs.HAS_FIXTURES }}
@@ -162,8 +161,7 @@ jobs:
         id: apply_terraform
         continue-on-error: true
         run: |
-          terraform apply --auto-approve -detailed-exitcode
-          if ($LASTEXITCODE -eq 1) { exit 1; }
+          terraform apply --auto-approve
 
           # generate variables_and_outputs.json (can be used by pester tests)
           terraform plan -json -out="plan.raw"
@@ -187,15 +185,13 @@ jobs:
         id: destroy_terraform
         continue-on-error: true
         run: |
-          terraform apply -destroy --auto-approve -detailed-exitcode
-          if ($LASTEXITCODE -eq 1) { exit 1; }
+          terraform apply -destroy --auto-approve
       - name: Destroy Fixtures
         if: ${{ inputs.HAS_FIXTURES }}
         id: destroy_fixtures
         continue-on-error: true
         run: |
-          terraform apply -destroy --auto-approve -detailed-exitcode
-          if ($LASTEXITCODE -eq 1) { exit 1; }
+          terraform apply -destroy --auto-approve
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: validation
         if: always()
