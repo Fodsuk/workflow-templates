@@ -49,13 +49,14 @@ jobs:
 
           $steps = ConvertFrom-Json $steps_json -depth 10 -AsHashtable
 
-          echo '|  action   |   outcome  |' >> $ENV:GITHUB_STEP_SUMMARY
-          echo '|-----------|------------|' >> $ENV:GITHUB_STEP_SUMMARY
+          echo '|  action   |   outcome  |      |' >> $ENV:GITHUB_STEP_SUMMARY
+          echo '|-----------|------------|:----:|' >> $ENV:GITHUB_STEP_SUMMARY
 
           foreach($e in $steps.GetEnumerator()) {
              $action_name = $e.Key
              $action_outcome = $e.Value.outcome #failure success
-             echo "|$action_name|$action_outcome|" >> $ENV:GITHUB_STEP_SUMMARY
+             $emoji = ($action_outcome -eq "success" ? ":heavy_check_mark:" : ($action_outcome -eq "failure" ? ":x:" : ":next_track_button:"  ))
+             echo "|$action_name|$action_outcome|$emoji" >> $ENV:GITHUB_STEP_SUMMARY
           }
 
           if ($${{ contains(steps.*.outcome, 'failure') }}) { throw; }
