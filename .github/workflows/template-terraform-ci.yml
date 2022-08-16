@@ -135,6 +135,7 @@ jobs:
           # generate a random environment name to allow resources to be differentiated (when multiple ci builds are running)
           $environment_name = "ci$(-join ((97..122) | Get-Random -Count 5 | % { [char]$_ }))"
           $tf_vars["environment"] = $environment_name
+          Write-Host "Added 'environment' parameter ($environment_name)"
 
           $hiera_tfvars_json = (ConvertTo-Json $tf_vars -Depth 99)
           Set-Content -Path ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}/hiera.auto.tfvars.json -Value $hiera_tfvars_json
