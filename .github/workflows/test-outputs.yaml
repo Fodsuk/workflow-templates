@@ -38,4 +38,4 @@ jobs:
         run: |
           Import-Module Pester
           ./powershell.ps1
-        workingDirectory: ${{github.workspace}}/.github/workflows
+        working-directory: ${{github.workspace}}/.github/workflows
