@@ -41,6 +41,8 @@ jobs:
           Write-Host "Destroying Fixtures"
       - name: validation
         run: |
+
+          echo '### Hello world! :rocket:' >> $GITHUB_STEP_SUMMARY
           if ($${{ contains(steps.*.outcome, 'failure') }}) {
 
           $steps_json = 
