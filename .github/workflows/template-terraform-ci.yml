@@ -155,13 +155,13 @@ jobs:
         id: plan_terraform
         continue-on-error: true
         run: |
-          terraform plan -detailed-exitcode
+          terraform plan -detailed-exitcode -out theplan
           if ($LASTEXITCODE -eq 1) { exit 1; }
       - name: Terraform Apply
         id: apply_terraform
         continue-on-error: true
         run: |
-          terraform apply --auto-approve
+          terraform apply theplan --auto-approve
 
           # generate variables_and_outputs.json (can be used by pester tests)
           terraform plan -json -out="plan.raw"
