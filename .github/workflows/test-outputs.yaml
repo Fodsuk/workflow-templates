@@ -17,6 +17,7 @@ jobs:
         id: create_terraform
         run: |
           echo '::set-output name=succeeded::false'
+          Import-Module Pester
           Get-ChildItem -Recurse
       - name: run tests
         id: run_tests
