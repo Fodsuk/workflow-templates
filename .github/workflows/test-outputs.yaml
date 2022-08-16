@@ -19,6 +19,7 @@ jobs:
           echo '::set-output name=succeeded::false'
           Import-Module Pester
           Get-ChildItem -Recurse
+          ./.github/workflows/powershell.ps1
       - name: run tests
         id: run_tests
         if: ${{ steps.create_fixtures.outputs.succeeded == 'true' }}
