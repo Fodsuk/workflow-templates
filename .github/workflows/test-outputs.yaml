@@ -27,15 +27,45 @@ jobs:
         if: ${{ steps.create_terraform.outputs.succeeded == 'true' }}
         run: |
           Write-Host "${{ steps.create_terraform.outputs.succeeded }}"
-      - name: run tests 3
-        id: run_tests3
-        if: ${{ steps.create_terraform.outputs.succeeded == 'true' && steps.create_fixtures.outputs.succeeded == 'true' }}
+      - name: does it translate
         run: |
-          Write-Host "${{ steps.create_fixtures.outputs.succeeded }}"
-          Write-Host "${{ steps.create_terraform.outputs.succeeded }}"
+          if ($${{ steps.create_terraform.outputs.succeeded == 'true' && steps.create_fixtures.outputs.succeeded == 'true' }}) {
+            Write-Host "All succeeded"
+          } else {
+            Write-Host "One failed"
+          }
+
+          if ($${{ steps.create_fixtures.outputs.succeeded == 'true' }}) {
+            Write-Host "create_fixtures succeeded"
+          } else {
+            Write-Host "create_fixtures failed"
+          }
+
+          if ($${{ steps.create_terraform.outputs.succeeded == 'true' }}) {
+            Write-Host "create_terraform succeeded"
+          } else {
+            Write-Host "create_terraform failed"
+          }
+    
       - name: run tests
         id: run_pester_tests
+        if: ${{ steps.create_terraform.outputs.succeeded == 'true' && steps.create_fixtures.outputs.succeeded == 'true' }}
+        continue-on-error: true
         run: |
           Import-Module Pester
-          ./powershell.ps1
+          $config = [PesterConfiguration]::Default
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
         working-directory: ${{github.workspace}}/.github/workflows
+      - name: validation
+        run : |
+          <#
+          if: ${{ steps.create_terraform.outputs.succeeded == 'false' || steps.create_fixtures.outputs.succeeded == 'false' }} {
+            throw "failed to create resources."
+          }
+
+          Write-Host
+          if ("${{ steps.run_pester_tests.outcome }}" -eq "skipped") {
+            throw ""
+          }
+          #>
