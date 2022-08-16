@@ -43,6 +43,7 @@ jobs:
         run: |
 
           echo '### Hello world! :rocket:' >> $GITHUB_STEP_SUMMARY
+          echo '### Hello again! :rocket:' >> $ENV:GITHUB_STEP_SUMMARY
           if ($${{ contains(steps.*.outcome, 'failure') }}) {
 
           $steps_json = 
