@@ -42,10 +42,6 @@ jobs:
       - name: validation
         run: |
 
-          echo '### Hello world! :rocket:' >> $GITHUB_STEP_SUMMARY
-          echo '### Hello again! :rocket:' >> $ENV:GITHUB_STEP_SUMMARY
-          if ($${{ contains(steps.*.outcome, 'failure') }}) {
-
           $steps_json = 
           @"
             ${{ toJSON(steps) }}
@@ -53,10 +49,13 @@ jobs:
 
           $steps = ConvertFrom-Json $steps_json -depth 10 -AsHashtable
 
-          foreach($e in $steps.GetEnumerator() | Where-Object { $_.Value.outcome -eq "failure" }) {
-             echo "::error title=step $($e.Key) failed::please review"
+          echo '|  action   |   outcome  |' >> $ENV:GITHUB_STEP_SUMMARY
+          echo '|-----------|------------|' >> $ENV:GITHUB_STEP_SUMMARY
+
+          foreach($e in $steps.GetEnumerator() "failure" }) {
+             $action_name = $e.Key
+             $action_outcome = $e.Value.outcome #failure success
+             echo "|$action_name|$action_outcome|" >> $ENV:GITHUB_STEP_SUMMARY
           }
 
-          throw;
-
-          }
+          if ($${{ contains(steps.*.outcome, 'failure') }}) { throw; }
