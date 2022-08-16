@@ -51,7 +51,7 @@ jobs:
           $steps = ConvertFrom-Json $steps_json -depth 10 -AsHashtable
 
           foreach($e in $steps.GetEnumerator() | Where-Object { $_.Value.outcome -eq "failure" }) {
-             echo "::error title=step $($e.Key)::failed"
+             echo "::error title=step $($e.Key)::$($e.Key) failed, please review"
           }
 
           throw;
