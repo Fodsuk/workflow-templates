@@ -1,0 +1,22 @@
+on: [push]
+jobs:
+  test_outputs:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: create fixtures
+        id: create_fixtures
+        run: |
+          echo '::set-output name=succeeded::true'
+      - name: create terraform
+        id: create_terraform
+        run: |
+          echo '::set-output name=succeeded::false'
+      - name: run tests
+        id: run_tests
+        run : |
+          Write-Host "${{ steps.create_fixtures.outputs.succeeded }}"
+          Write-Host "${{ steps.create_terraform.outputs.succeeded }}"
