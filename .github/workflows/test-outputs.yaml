@@ -22,6 +22,6 @@ jobs:
           Write-Host "${{ steps.create_fixtures.outputs.succeeded }}"
       - name: run tests 2
         id: run_tests2
-        if: steps.create_terraform.outputs.succeeded
+        if: false
         run : |
           Write-Host "${{ steps.create_terraform.outputs.succeeded }}"
