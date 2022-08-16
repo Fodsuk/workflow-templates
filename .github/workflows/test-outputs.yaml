@@ -44,10 +44,16 @@ jobs:
           if ($${{ contains(steps.*.outcome, 'failure') }}) {
             echo "::error title=failure::a step failed"
 
-            $steps_json = @"${{ toJSON(steps) }}
+            $steps_json = 
+            @"
+            ${{ toJSON(steps) }}
             "@
 
-            Write-Host $steps_json
+            $steps = ConvertFrom-Json $steps_json -depth 10 -AsHashtable
+ 
+            foreach($e in $steps.GetEnumerator() | Where-Object { $_.Value.outcome -eq "failure" }) {
+              echo "::error title=step $($e.Key)::failed"
+            }
 
           }
  
