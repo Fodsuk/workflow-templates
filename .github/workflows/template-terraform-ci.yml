@@ -168,7 +168,7 @@ jobs:
           terraform show -json plan.raw > variables_and_outputs.json
         # run tests
       - name: Run Tests
-        if: ${{ inputs.HAS_TESTS }}
+        if: ${{ inputs.HAS_TESTS && steps.apply_terraform.outcome == 'success' }}
         id: run_tests
         continue-on-error: true
         run: |
@@ -194,9 +194,7 @@ jobs:
           terraform apply -destroy --auto-approve
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
       - name: validation
-        if: always()
         run: |
-          if ($${{ contains(steps.*.outcome, 'failure') }}) {
 
           $steps_json = 
           @"
@@ -205,11 +203,15 @@ jobs:
 
           $steps = ConvertFrom-Json $steps_json -depth 10 -AsHashtable
 
-          foreach($e in $steps.GetEnumerator() | Where-Object { $_.Value.outcome -eq "failure" }) {
-             echo "::error title=step $($e.Key) failed::please review"
+          echo '|  action   |   outcome  |      |' >> $ENV:GITHUB_STEP_SUMMARY
+          echo '|-----------|------------|:----:|' >> $ENV:GITHUB_STEP_SUMMARY
+
+          foreach($e in $steps.GetEnumerator()) {
+             $action_name = $e.Key
+             $action_outcome = $e.Value.outcome
+             $emoji = ($action_outcome -eq "success" ? ":heavy_check_mark:" : ($action_outcome -eq "failure" ? ":x:" : ":next_track_button:"  ))
+             echo "|$action_name|$action_outcome|$emoji" >> $ENV:GITHUB_STEP_SUMMARY
           }
 
-          throw;
-
-          }
+          if ($${{ contains(steps.*.outcome, 'failure') }}) { throw; }
 
