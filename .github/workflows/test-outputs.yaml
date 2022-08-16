@@ -42,6 +42,7 @@ jobs:
       - name: validation
         run : |
           if ($${{ contains(steps.*.outcome, 'failure') }}) {
-            throw "Something went bang"
+            echo "::error title=failure::a step failed"
+            throw;
           }
  
