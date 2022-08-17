@@ -155,11 +155,11 @@ jobs:
         id: plan_terraform
         continue-on-error: true
         run: |
-          #terraform plan -input=false -detailed-exitcode || exit 0
           $p = Start-Process -Wait -NoNewWindow -PassThru -FilePath "terraform" -ArgumentList @('plan', '-detailed-exitcode')
           # exit code 1 == error with plan
           If ($p.ExitCode -eq 1) { Exit 1 }
       - name: Terraform Apply
+        if: ${{ steps.plan_terraform.outcome == 'success' }}
         id: apply_terraform
         continue-on-error: true
         run: |
