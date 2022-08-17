@@ -153,15 +153,14 @@ jobs:
         working-directory: ${{ inputs.HIERA_DIRECTORY }}
       - name: Terraform Plan
         id: plan_terraform
-        shell: bash
         continue-on-error: true
         run: |
-          terraform plan -input=false -out=theplan -detailed-exitcode
-          if [ $? -eq 1 ]; then
-            exit 1
-          else
-            exit 0
-          fi
+          terraform plan -input=false -out=theplan -detailed-exitcode || exit 0
+      - name: Terraform Validate Plan
+        id: validate_terraform_plan
+        continue-on-error: true
+        run: |
+          Write-Host "the exit code ${{ steps.plan_terraform.output.exitcode }}"
       - name: Terraform Apply
         id: apply_terraform
         continue-on-error: true
