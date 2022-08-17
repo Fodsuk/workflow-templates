@@ -156,17 +156,17 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          terraform plan -input=false -out=theplan -detailed-exitcode || exit 0
+          terraform plan -input=false -detailed-exitcode || exit 0
       - name: Terraform Validate Plan
         id: validate_terraform_plan
         continue-on-error: true
         run: |
-          Write-Host "the exit code ${{ steps.plan_terraform.output.exitcode }}"
+          Write-Host "the exit code ${{ steps.plan_terraform.outputs.exitcode }}"
       - name: Terraform Apply
         id: apply_terraform
         continue-on-error: true
         run: |
-          terraform apply theplan --auto-approve
+          terraform apply --auto-approve
 
           # generate variables_and_outputs.json (can be used by pester tests)
           terraform plan -json -out="plan.raw"
