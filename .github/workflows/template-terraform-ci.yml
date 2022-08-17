@@ -160,11 +160,6 @@ jobs:
           Write-Host $p.ExitCode
           If ($p.ExitCode -eq 1) { Exit 1 }
           If ($p.ExitCode -eq 2) { Exit 2 }
-      - name: Terraform Validate Plan
-        id: validate_terraform_plan
-        continue-on-error: true
-        run: |
-          Write-Host "the exit code ${{ steps.plan_terraform.outputs.exitcode }}"
       - name: Terraform Apply
         id: apply_terraform
         continue-on-error: true
