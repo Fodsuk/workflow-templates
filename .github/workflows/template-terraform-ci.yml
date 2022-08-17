@@ -195,7 +195,7 @@ jobs:
         run: |
           terraform apply -destroy --auto-approve
         working-directory: ${{ inputs.FIXTURE_DIRECTORY }}
-      - name: validation
+      - name: Validation CI Run
         run: |
 
           $steps_json = 
