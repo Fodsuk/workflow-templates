@@ -45,7 +45,7 @@ jobs:
       - name: Download Terraform Artifacts
         uses: actions/download-artifact@v3
         with:
-          name: terraform_plan_${{ inputs.ENVIRONMENT }}
+          name: terraform_plan_${{ inputs.ENVIRONMENT }}-reader
           path: ${{github.workspace}}/${{ inputs.TERRAFORM_DIRECTORY }}
       - name: Upzip Terraform Artifacts
         run: |
