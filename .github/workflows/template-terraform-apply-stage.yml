@@ -10,6 +10,16 @@ on:
         # environment
       ENVIRONMENT:
         type: string
+      # testing
+      HAS_TESTS:
+        type: boolean
+        default: true
+      TEST_DIRECTORY:
+        type: string
+        default: spec
+      PESTER_VERSION:
+        type: string
+        default: 5.3.3
     secrets:
       TFSTATE_RESOURCE_GROUP_NAME:
         required: true
@@ -40,6 +50,10 @@ jobs:
       ARM_SUBSCRIPTION_ID: "${{ secrets.SUBSCRIPTION_ID }}"
       ARM_TENANT_ID: "${{ secrets.TENANT_ID }}"
     steps:
+      - name: Az login
+        uses: azure/login@v1
+        with:
+          creds: '{"clientId":"${{ secrets.CLIENT_ID }}","clientSecret":"${{ secrets.CLIENT_SECRET }}","subscriptionId":"${{ secrets.SUBSCRIPTION_ID }}","tenantId":"${{ secrets.TENANT_ID }}"}'
       - name: checkout
         uses: actions/checkout@v3
       - name: Download Terraform Artifacts
@@ -76,8 +90,20 @@ jobs:
         env:
           ARM_ACCESS_KEY: "${{ secrets.TFSTATE_STORAGE_ACCOUNT_ACCESS_KEY }}"
       - name: Terraform Apply
+        id: apply_terraform
         run: |
           terraform apply terraform.plan
-          
-       # terraform apply - DONE
-       # support testing after
+          # generate variables_and_outputs.json (can be used by pester tests)
+
+          terraform show -json terraform.plan > variables_and_outputs.json
+      - name: Run Integration Tests
+        if: ${{ inputs.HAS_TESTS && steps.apply_terraform.outcome == 'success' }}
+        run: |
+          Import-Module Pester -RequiredVersion ${{ inputs.PESTER_VERSION }}
+          $pester_config = [PesterConfiguration]::Default
+          $pester_config.Output.Verbosity = "Detailed"
+          $pester_config.Filter.Tag = ("integration", "${{ inputs.ENVIRONMENT }}")
+          $pester_config.Run.Exit = $true
+
+          Invoke-Pester -Configuration $pester_config
+        working-directory: ${{ inputs.TEST_DIRECTORY }}
