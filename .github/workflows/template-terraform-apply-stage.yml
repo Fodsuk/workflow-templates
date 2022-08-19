@@ -89,10 +89,9 @@ jobs:
         id: apply_terraform
         run: |
           terraform apply terraform.plan
-
           # generate variables_and_outputs.json (can be used by pester tests)
-          terraform plan -json -out="plan.raw"
-          terraform show -json plan.raw > variables_and_outputs.json
+
+          terraform show -json terraform.plan > variables_and_outputs.json
       - name: Run Integration Tests
         if: ${{ inputs.HAS_TESTS && steps.apply_terraform.outcome == 'success' }}
         run: |
