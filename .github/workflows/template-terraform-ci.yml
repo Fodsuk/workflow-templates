@@ -177,6 +177,7 @@ jobs:
           Import-Module Pester -RequiredVersion ${{ inputs.PESTER_VERSION }}
           $pester_config = [PesterConfiguration]::Default
           $pester_config.Output.Verbosity = "Detailed"
+          $pester_config.Output.CIFormat = "GithubActions"
           $pester_config.Filter.Tag = "ci"
           $pester_config.Run.Exit = $true
 
