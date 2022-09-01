@@ -51,31 +51,39 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
-      - name: Install Terraform ${{ inputs.TERRAFORM_VERSION }}
-        uses: hashicorp/setup-terraform@v2
+      - id: terraform_install_and_instantiate
+        uses: Fodsuk/actions/terraform-init@feature/break-down-composite-actions
         with:
-          terraform_version: ${{ inputs.TERRAFORM_VERSION }}
-          terraform_wrapper: false
-      - name: Configure Azurerm Backend
-        run: |
-          $backend = @"
-            terraform {
-                backend "azurerm" {}
-            }
-          "@
-          Set-Content -Value $backend -Path pipeline_azurerm_backend.tf
+          TERRAFORM_VERSION: ${{ inputs.TERRAFORM_VERSION }}
+          TERRAFORM_DIRECTORY: ${{ inputs.TERRAFORM_DIRECTORY }}
+          TFSTATE_RESOURCE_GROUP_NAME: ${{ secrets.TFSTATE_RESOURCE_GROUP_NAME }}
+          TFSTATE_STORAGE_ACCOUNT_NAME: ${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}
+          TFSTATE_STORAGE_ACCOUNT_ACCESS_KEY: ${{ secrets.TFSTATE_STORAGE_ACCOUNT_ACCESS_KEY }}
+      # - name: Install Terraform ${{ inputs.TERRAFORM_VERSION }}
+      #   uses: hashicorp/setup-terraform@v2
+      #   with:
+      #     terraform_version: ${{ inputs.TERRAFORM_VERSION }}
+      #     terraform_wrapper: false
+      # - name: Configure Azurerm Backend
+      #   run: |
+      #     $backend = @"
+      #       terraform {
+      #           backend "azurerm" {}
+      #       }
+      #     "@
+      #     Set-Content -Value $backend -Path pipeline_azurerm_backend.tf
 
-          $backend_variables = @"
-          resource_group_name  = "${{ secrets.TFSTATE_RESOURCE_GROUP_NAME }}"
-          storage_account_name = "${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}"
-          container_name       = "tfstate"
-          key                  = "${{ github.event.repository.name }}.tfstate"
-          "@
-          Set-Content -Value $backend_variables -Path config.azurerm.tfbackend
+      #     $backend_variables = @"
+      #     resource_group_name  = "${{ secrets.TFSTATE_RESOURCE_GROUP_NAME }}"
+      #     storage_account_name = "${{ secrets.TFSTATE_STORAGE_ACCOUNT_NAME }}"
+      #     container_name       = "tfstate"
+      #     key                  = "${{ github.event.repository.name }}.tfstate"
+      #     "@
+      #     Set-Content -Value $backend_variables -Path config.azurerm.tfbackend
 
-          terraform init -backend-config="./config.azurerm.tfbackend"
-        env:
-          ARM_ACCESS_KEY: "${{ secrets.TFSTATE_STORAGE_ACCOUNT_ACCESS_KEY }}"
+      #     terraform init -backend-config="./config.azurerm.tfbackend"
+      #   env:
+      #     ARM_ACCESS_KEY: "${{ secrets.TFSTATE_STORAGE_ACCOUNT_ACCESS_KEY }}"
       - name: Download & Build Hiera
         if: ${{ inputs.HAS_HIERA }}
         run: |

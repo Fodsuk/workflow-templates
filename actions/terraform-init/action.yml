@@ -1,0 +1,53 @@
+name: Terraform Install & Init
+description: Install and  Terraform
+branding:
+  color: purple
+  icon: cloud-lightning
+inputs:
+  TERRAFORM_VERSION:
+    description: Terraform version to install e.g.
+    required: true
+  TERRAFORM_DIRECTORY:
+    description: File directory where the Terraform is found
+    default: src
+  TFSTATE_RESOURCE_GROUP_NAME:
+    description: Name of the resource group that contains the storage account that hosts the terraform state.
+    required: true
+  TFSTATE_STORAGE_ACCOUNT_NAME:
+    description: Name of the storage account
+    required: true
+  TFSTATE_STORAGE_ACCOUNT_ACCESS_KEY:
+    description: The access key to access the storage account
+    required: true
+outputs:
+  random-number:
+    description: "Random number"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+runs:
+  using: "composite"
+  steps:
+    - name: Install Terraform ${{ inputs.TERRAFORM_VERSION }}
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ inputs.TERRAFORM_VERSION }}
+        terraform_wrapper: false
+    - name: Configure Azurerm Backend
+      run: |
+        $backend = @"
+          terraform {
+              backend "azurerm" {}
+          }
+        "@
+        Set-Content -Value $backend -Path pipeline_azurerm_backend.tf
+
+        $backend_variables = @"
+        resource_group_name  = "${{ inputs.TFSTATE_RESOURCE_GROUP_NAME }}"
+        storage_account_name = "${{ inputs.TFSTATE_STORAGE_ACCOUNT_NAME }}"
+        container_name       = "tfstate"
+        key                  = "${{ github.event.repository.name }}.tfstate"
+        "@
+        Set-Content -Value $backend_variables -Path config.azurerm.tfbackend
+
+        terraform init -backend-config="./config.azurerm.tfbackend"
+      env:
+        ARM_ACCESS_KEY: "${{ inputs.TFSTATE_STORAGE_ACCOUNT_ACCESS_KEY }}"
